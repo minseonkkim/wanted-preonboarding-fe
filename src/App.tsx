@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 import { MOCK_DATA } from './data/mockData';
 import { MockData } from './types/mock';
+import Skeleton from './components/Skeleton';
 import Card from './components/Card';
 
 const ITEMS_PER_PAGE = 10;
@@ -15,9 +16,6 @@ function App() {
 
   const totalSum = items.reduce((acc, item) => acc + item.price, 0);
 
-  useEffect(() => {
-    loadMoreItems();
-  }, []);
 
   useEffect(() => {
     const lastItem = document.querySelector('.item:last-child') as HTMLElement;
@@ -41,7 +39,7 @@ function App() {
     };
   }, [loading, hasMore]);
 
-  const loadMoreItems = () => {
+  const loadMoreItems = useCallback(() => {
     setLoading(true);
     setTimeout(() => {
       const newItems = MOCK_DATA.slice(currentIndex, currentIndex + ITEMS_PER_PAGE);
@@ -52,17 +50,23 @@ function App() {
         setHasMore(false);
       }
     }, 1000);
-  };
+  }, [currentIndex]);
+
+  useEffect(() => {
+    loadMoreItems();
+  }, [loadMoreItems]);
 
   return (
     <div style={{ padding: '20px' }}>
       <h2>Total Price: ${totalSum.toFixed(2)}</h2>
       <div style={{ marginBottom: '20px' }}>
-        {items.map((item) => (
-          <Card key={item.productId} item={item} /> 
-        ))}
+        {loading ? (
+          Array.from({ length: ITEMS_PER_PAGE }, (_, index) => <Skeleton key={index} />) // Show Skeletons when loading
+        ) : (
+          items.map((item) => <Card key={item.productId} item={item} />) // Use the Card component
+        )}
       </div>
-      {loading && <div>Loading...</div>}
+      {!hasMore && !loading && <div>No more items to load.</div>}
     </div>
   );
 }
