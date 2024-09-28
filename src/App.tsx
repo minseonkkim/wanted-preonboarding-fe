@@ -58,15 +58,17 @@ function App() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>Total Price: ${totalSum.toFixed(2)}</h2>
+      <div style={{ padding: '10px', background: 'white', position: 'fixed', top: '0', left: '0', width: '100vw', height: '100px'}}>
+        <h2>Total Price: ${totalSum.toFixed(2)}</h2>
+      </div>
+      
       <div style={{ marginBottom: '20px' }}>
         {loading ? (
-          Array.from({ length: ITEMS_PER_PAGE }, (_, index) => <Skeleton key={index} />) // Show Skeletons when loading
+          Array.from({ length: ITEMS_PER_PAGE }, (_, index) => <Skeleton key={index} />) 
         ) : (
-          items.map((item) => <Card key={item.productId} item={item} />) // Use the Card component
+          items.map((item) => <Card key={item.productId} item={item} />) 
         )}
       </div>
-      {!hasMore && !loading && <div>No more items to load.</div>}
     </div>
   );
 }
