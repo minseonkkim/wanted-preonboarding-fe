@@ -1,3 +1,5 @@
+import { MockData } from "../types/mock";
+
 export const MOCK_DATA: MockData[] = [
     {
       productId: '66e1c1df3594bb65169e0f9b',
