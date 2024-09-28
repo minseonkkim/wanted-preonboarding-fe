@@ -4,7 +4,7 @@ import { MOCK_DATA } from './data/mockData';
 import { MockData } from './types/mock';
 import Card from './components/Card';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 function App() {
   const [items, setItems] = useState<MockData[]>([]);
