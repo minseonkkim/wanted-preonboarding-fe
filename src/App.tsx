@@ -16,30 +16,8 @@ function App() {
 
   const totalSum = items.reduce((acc, item) => acc + item.price, 0);
 
-
-  useEffect(() => {
-    const lastItem = document.querySelector('.item:last-child') as HTMLElement;
-    if (loading || !lastItem) return;
-
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreItems();
-      }
-    };
-
-    observer.current = new IntersectionObserver(observerCallback);
-    if (lastItem) {
-      observer.current.observe(lastItem);
-    }
-
-    return () => {
-      if (observer.current && lastItem) {
-        observer.current.unobserve(lastItem);
-      }
-    };
-  }, [loading, hasMore]);
-
   const loadMoreItems = useCallback(() => {
+    if (!hasMore) return; 
     setLoading(true);
     setTimeout(() => {
       const newItems = MOCK_DATA.slice(currentIndex, currentIndex + ITEMS_PER_PAGE);
@@ -47,10 +25,30 @@ function App() {
       setCurrentIndex((prev) => prev + ITEMS_PER_PAGE);
       setLoading(false);
       if (newItems.length < ITEMS_PER_PAGE) {
-        setHasMore(false);
+        setHasMore(false); // Stop loading when no more items are left.
       }
     }, 1000);
-  }, [currentIndex]);
+  }, [currentIndex, hasMore]);
+
+  useEffect(() => {
+    const lastItem = document.querySelector('.item:last-child') as HTMLElement;
+    if (loading || !lastItem || !hasMore) return;
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && !loading && hasMore) {
+        loadMoreItems();
+      }
+    };
+
+    if (observer.current) observer.current.disconnect(); 
+
+    observer.current = new IntersectionObserver(observerCallback);
+    if (lastItem) observer.current.observe(lastItem);
+
+    return () => {
+      if (observer.current) observer.current.disconnect(); 
+    }
+  }, [loading, hasMore, loadMoreItems]);
 
   useEffect(() => {
     loadMoreItems();
@@ -61,13 +59,10 @@ function App() {
       <div style={{ padding: '10px', background: 'white', position: 'fixed', top: '0', left: '0', width: '100vw', height: '100px'}}>
         <h2>Total Price: ${totalSum.toFixed(2)}</h2>
       </div>
-      
+
       <div style={{ marginBottom: '20px' }}>
-        {loading ? (
-          Array.from({ length: ITEMS_PER_PAGE }, (_, index) => <Skeleton key={index} />) 
-        ) : (
-          items.map((item) => <Card key={item.productId} item={item} />) 
-        )}
+        {items.map((item) => <Card key={item.productId} item={item} />)}
+        {loading && Array.from({ length: ITEMS_PER_PAGE }, (_, index) => <Skeleton key={index} />)}
       </div>
     </div>
   );
